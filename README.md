@@ -401,6 +401,8 @@ Inbound sender policy is now consistent:
 
 This keeps accidental exposure low by default.
 
+Full channel configuration reference: [docs/channels-reference.md](docs/channels-reference.md).
+
 Recommended low-friction setup (secure + fast):
 
 - **Telegram:** allowlist your own `@username` (without `@`) and/or your numeric Telegram user ID.
@@ -834,11 +836,21 @@ Start from the docs hub for a task-based map:
 
 Core collaboration references:
 
+- Documentation hub: [docs/README.md](docs/README.md)
+- Documentation template: [docs/doc-template.md](docs/doc-template.md)
+- Documentation change checklist: [docs/README.md#4-documentation-change-checklist](docs/README.md#4-documentation-change-checklist)
+- Channel configuration reference: [docs/channels-reference.md](docs/channels-reference.md)
+- Matrix encrypted-room operations: [docs/matrix-e2ee-guide.md](docs/matrix-e2ee-guide.md)
 - Contribution guide: [CONTRIBUTING.md](CONTRIBUTING.md)
 - PR workflow policy: [docs/pr-workflow.md](docs/pr-workflow.md)
 - Reviewer playbook (triage + deep review): [docs/reviewer-playbook.md](docs/reviewer-playbook.md)
 - CI ownership and triage map: [docs/ci-map.md](docs/ci-map.md)
 - Security disclosure policy: [SECURITY.md](SECURITY.md)
+
+For deployment and runtime operations:
+
+- Network deployment guide: [docs/network-deployment.md](docs/network-deployment.md)
+- Proxy agent playbook: [docs/proxy-agent-playbook.md](docs/proxy-agent-playbook.md)
 
 ## Support ZeroClaw
 
@@ -859,7 +871,7 @@ We're building in the open because the best ideas come from everywhere. If you'r
 
 ## License
 
-MIT — see [LICENSE](LICENSE) and [NOTICE](NOTICE) for contributor attribution
+MIT — see [LICENSE](LICENSE) for license terms and attribution baseline
 
 ## Contributing
 

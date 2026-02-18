@@ -71,6 +71,8 @@ Last verified: **February 18, 2026**.
 - `zeroclaw models refresh --provider <ID>`
 - `zeroclaw models refresh --force`
 
+`models refresh` currently supports live catalog refresh for provider IDs: `openrouter`, `openai`, `anthropic`, `groq`, `mistral`, `deepseek`, `xai`, `together-ai`, `gemini`, `ollama`, `astrai`, `venice`, `fireworks`, `cohere`, `moonshot`, `glm`, `zai`, `qwen`, and `nvidia`.
+
 ### `channel`
 
 - `zeroclaw channel list`
@@ -79,6 +81,13 @@ Last verified: **February 18, 2026**.
 - `zeroclaw channel bind-telegram <IDENTITY>`
 - `zeroclaw channel add <type> <json>`
 - `zeroclaw channel remove <name>`
+
+Runtime in-chat commands (Telegram/Discord while channel server is running):
+
+- `/models`
+- `/models <provider>`
+- `/model`
+- `/model <model-id>`
 
 `add/remove` currently route you back to managed setup/manual config paths (not full declarative mutators yet).
 
@@ -118,4 +127,3 @@ To verify docs against your current binary quickly:
 zeroclaw --help
 zeroclaw <command> --help
 ```
-

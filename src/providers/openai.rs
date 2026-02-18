@@ -8,8 +8,8 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 pub struct OpenAiProvider {
+    base_url: String,
     credential: Option<String>,
-    client: Client,
 }
 
 #[derive(Debug, Serialize)]
@@ -136,13 +136,17 @@ impl NativeResponseMessage {
 
 impl OpenAiProvider {
     pub fn new(credential: Option<&str>) -> Self {
+        Self::with_base_url(None, credential)
+    }
+
+    /// Create a provider with an optional custom base URL.
+    /// Defaults to `https://api.openai.com/v1` when `base_url` is `None`.
+    pub fn with_base_url(base_url: Option<&str>, credential: Option<&str>) -> Self {
         Self {
+            base_url: base_url
+                .map(|u| u.trim_end_matches('/').to_string())
+                .unwrap_or_else(|| "https://api.openai.com/v1".to_string()),
             credential: credential.map(ToString::to_string),
-            client: Client::builder()
-                .timeout(std::time::Duration::from_secs(120))
-                .connect_timeout(std::time::Duration::from_secs(10))
-                .build()
-                .unwrap_or_else(|_| Client::new()),
         }
     }
 
@@ -244,6 +248,10 @@ impl OpenAiProvider {
 
         ProviderChatResponse { text, tool_calls }
     }
+
+    fn http_client(&self) -> Client {
+        crate::config::build_runtime_proxy_client_with_timeouts("provider.openai", 120, 10)
+    }
 }
 
 #[async_trait]
@@ -280,8 +288,8 @@ impl Provider for OpenAiProvider {
         };
 
         let response = self
-            .client
-            .post("https://api.openai.com/v1/chat/completions")
+            .http_client()
+            .post(format!("{}/chat/completions", self.base_url))
             .header("Authorization", format!("Bearer {credential}"))
             .json(&request)
             .send()
@@ -321,8 +329,8 @@ impl Provider for OpenAiProvider {
         };
 
         let response = self
-            .client
-            .post("https://api.openai.com/v1/chat/completions")
+            .http_client()
+            .post(format!("{}/chat/completions", self.base_url))
             .header("Authorization", format!("Bearer {credential}"))
             .json(&native_request)
             .send()
@@ -348,8 +356,8 @@ impl Provider for OpenAiProvider {
 
     async fn warmup(&self) -> anyhow::Result<()> {
         if let Some(credential) = self.credential.as_ref() {
-            self.client
-                .get("https://api.openai.com/v1/models")
+            self.http_client()
+                .get(format!("{}/models", self.base_url))
                 .header("Authorization", format!("Bearer {credential}"))
                 .send()
                 .await?
