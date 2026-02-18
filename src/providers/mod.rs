@@ -314,6 +314,9 @@ fn resolve_provider_credential(name: &str, credential_override: Option<&str>) ->
         "perplexity" => vec!["PERPLEXITY_API_KEY"],
         "cohere" => vec!["COHERE_API_KEY"],
         name if is_moonshot_alias(name) => vec!["MOONSHOT_API_KEY"],
+        "kimi-code" | "kimi_coding" | "kimi_for_coding" => {
+            vec!["KIMI_CODE_API_KEY", "MOONSHOT_API_KEY"]
+        }
         name if is_glm_alias(name) => vec!["GLM_API_KEY"],
         name if is_minimax_alias(name) => vec!["MINIMAX_API_KEY"],
         name if is_qianfan_alias(name) => vec!["QIANFAN_API_KEY"],
@@ -431,6 +434,16 @@ pub fn create_provider_with_url(
             key,
             AuthStyle::Bearer,
         ))),
+        // Kimi Code uses a different endpoint and requires User-Agent: KimiCLI/0.77
+        "kimi-code" | "kimi_coding" | "kimi_for_coding" => Ok(Box::new(
+            OpenAiCompatibleProvider::new_with_user_agent(
+                "Kimi Code",
+                "https://api.kimi.com/coding/v1",
+                key,
+                AuthStyle::Bearer,
+                "KimiCLI/0.77",
+            ),
+        )),
         "synthetic" => Ok(Box::new(OpenAiCompatibleProvider::new(
             "Synthetic", "https://api.synthetic.com", key, AuthStyle::Bearer,
         ))),

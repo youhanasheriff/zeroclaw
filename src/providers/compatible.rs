@@ -22,6 +22,9 @@ pub struct OpenAiCompatibleProvider {
     /// When false, do not fall back to /v1/responses on chat completions 404.
     /// GLM/Zhipu does not support the responses API.
     supports_responses_fallback: bool,
+    /// Optional User-Agent header to send with requests.
+    /// Required by some providers like Kimi Code (KimiCLI/0.77).
+    user_agent: Option<String>,
     client: Client,
 }
 
@@ -43,18 +46,7 @@ impl OpenAiCompatibleProvider {
         credential: Option<&str>,
         auth_style: AuthStyle,
     ) -> Self {
-        Self {
-            name: name.to_string(),
-            base_url: base_url.trim_end_matches('/').to_string(),
-            credential: credential.map(ToString::to_string),
-            auth_header: auth_style,
-            supports_responses_fallback: true,
-            client: Client::builder()
-                .timeout(std::time::Duration::from_secs(120))
-                .connect_timeout(std::time::Duration::from_secs(10))
-                .build()
-                .unwrap_or_else(|_| Client::new()),
-        }
+        Self::new_with_options(name, base_url, credential, auth_style, true, None)
     }
 
     /// Same as `new` but skips the /v1/responses fallback on 404.
@@ -65,17 +57,58 @@ impl OpenAiCompatibleProvider {
         credential: Option<&str>,
         auth_style: AuthStyle,
     ) -> Self {
+        Self::new_with_options(name, base_url, credential, auth_style, false, None)
+    }
+
+    /// Create with custom User-Agent header.
+    /// Use for providers like Kimi Code that require specific User-Agent.
+    pub fn new_with_user_agent(
+        name: &str,
+        base_url: &str,
+        credential: Option<&str>,
+        auth_style: AuthStyle,
+        user_agent: &str,
+    ) -> Self {
+        Self::new_with_options(
+            name,
+            base_url,
+            credential,
+            auth_style,
+            true,
+            Some(user_agent.to_string()),
+        )
+    }
+
+    /// Internal constructor with all options.
+    fn new_with_options(
+        name: &str,
+        base_url: &str,
+        credential: Option<&str>,
+        auth_style: AuthStyle,
+        supports_responses_fallback: bool,
+        user_agent: Option<String>,
+    ) -> Self {
+        let mut client_builder = Client::builder()
+            .timeout(std::time::Duration::from_secs(120))
+            .connect_timeout(std::time::Duration::from_secs(10));
+
+        // Add User-Agent header to default headers if specified
+        if let Some(ref ua) = user_agent {
+            let mut headers = reqwest::header::HeaderMap::new();
+            if let Ok(ua_value) = reqwest::header::HeaderValue::from_str(ua) {
+                headers.insert(reqwest::header::USER_AGENT, ua_value);
+            }
+            client_builder = client_builder.default_headers(headers);
+        }
+
         Self {
             name: name.to_string(),
             base_url: base_url.trim_end_matches('/').to_string(),
             credential: credential.map(ToString::to_string),
             auth_header: auth_style,
-            supports_responses_fallback: false,
-            client: Client::builder()
-                .timeout(std::time::Duration::from_secs(120))
-                .connect_timeout(std::time::Duration::from_secs(10))
-                .build()
-                .unwrap_or_else(|_| Client::new()),
+            supports_responses_fallback,
+            user_agent,
+            client: client_builder.build().unwrap_or_else(|_| Client::new()),
         }
     }
 
